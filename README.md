@@ -67,6 +67,10 @@ Tamamlanan çalışmalar:
 
 İlk sprint sonunda uygulamanın yüksek doğruluklu (high-fidelity) kullanıcı arayüzü prototipi hazırlanmış ve temel kullanıcı akışları oluşturulmuştur.
 <img width="1886" height="910" alt="image" src="https://github.com/user-attachments/assets/fb92b8c8-2bbd-4d41-b656-dc5c442b31a8" />
+<img width="1900" height="907" alt="image" src="https://github.com/user-attachments/assets/a4d923f1-9599-4a89-bc00-93cf1d041b07" />
+<img width="1896" height="903" alt="image" src="https://github.com/user-attachments/assets/a1b0320c-dafa-4caf-b78e-25544d8e7830" />
+<img width="1889" height="909" alt="image" src="https://github.com/user-attachments/assets/9483002d-9dc9-4088-9abd-b180866faf2e" />
+
 
 # Sprint Review
 Sprint sonunda aşağıdaki çıktılar elde edilmiştir:
