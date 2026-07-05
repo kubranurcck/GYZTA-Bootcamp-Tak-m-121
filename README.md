@@ -50,6 +50,9 @@ Seyit Can PERİK
 # Sprint Board Update
 
 * Sprint Board ekran görüntüleri README içerisinde paylaşılmıştır.
+<img width="1919" height="811" alt="image" src="https://github.com/user-attachments/assets/d29b9a26-0563-42ae-8f63-26bda3ba8cbb" />
+<img width="1919" height="839" alt="image" src="https://github.com/user-attachments/assets/ccc99a5a-5d1f-4529-af92-834ccc66ec5e" />
+
 
 # Ürün Durumu
 Sprint 1 sonunda uygulamanın temel kullanıcı arayüzü başarıyla oluşturulmuştur.
