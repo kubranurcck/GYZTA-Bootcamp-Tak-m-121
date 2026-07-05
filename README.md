@@ -66,6 +66,7 @@ Tamamlanan çalışmalar:
 * Product Backlog oluşturulması
 
 İlk sprint sonunda uygulamanın yüksek doğruluklu (high-fidelity) kullanıcı arayüzü prototipi hazırlanmış ve temel kullanıcı akışları oluşturulmuştur.
+<img width="1886" height="910" alt="image" src="https://github.com/user-attachments/assets/fb92b8c8-2bbd-4d41-b656-dc5c442b31a8" />
 
 # Sprint Review
 Sprint sonunda aşağıdaki çıktılar elde edilmiştir:
