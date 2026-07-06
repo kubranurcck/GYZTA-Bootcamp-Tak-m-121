@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Supplier Evaluation System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --primary:#2563EB;
+    --primary-dark:#1D4ED8;
+    --primary-light:#EFF4FF;
+    --primary-100:#DBE7FE;
+    --bg:#F8FAFC;
+    --card:#FFFFFF;
+    --border:#E4E9F1;
+    --text-1:#0F172A;
+    --text-2:#5B6472;
+    --text-3:#94A0B2;
+    --low:#16A34A;    --low-bg:#E7F7EC;
+    --medium:#D97706; --medium-bg:#FEF3E0;
+    --high:#DC2626;   --high-bg:#FDEAEA;
+    --radius:14px;
+    --radius-sm:8px;
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.05);
+    --shadow-md:0 4px 10px rgba(15,23,42,.06), 0 12px 28px rgba(15,23,42,.07);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text-1);
+    -webkit-font-smoothing:antialiased;
+    font-size:14px;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---------- APP SHELL ---------- */
+  .app{display:flex; min-height:100vh; min-width:1180px;}
+
+  /* Sidebar */
+  .sidebar{
+    width:240px; flex-shrink:0; background:var(--card); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  }
+  .sidebar-brand{
+    display:flex; align-items:center; gap:10px; padding:22px 20px 18px 22px; border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#4F86F7);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .brand-name{font-weight:700; font-size:14.5px; line-height:1.25; letter-spacing:-.01em;}
+  .brand-sub{font-size:10.5px; color:var(--text-3); font-weight:600; letter-spacing:.04em; text-transform:uppercase;}
+
+  .nav-group{padding:16px 12px;}
+  .nav-label{font-size:10.5px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; padding:8px 12px 6px;}
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:9px; color:var(--text-2);
+    font-weight:500; font-size:13.5px; margin-bottom:2px; transition:background .12s, color .12s;
+  }
+  .nav-item svg{flex-shrink:0;}
+  .nav-item:hover{background:var(--bg); color:var(--text-1);}
+  .nav-item.active{background:var(--primary-light); color:var(--primary); font-weight:600;}
+  .nav-item.active svg{stroke:var(--primary);}
+  .nav-item .badge-count{
+    margin-left:auto; background:var(--high); color:#fff; font-size:10px; font-weight:700;
+    padding:1px 6px; border-radius:20px;
+  }
+  .sidebar-footer{margin-top:auto; padding:16px; border-top:1px solid var(--border);}
+  .plan-card{background:var(--bg); border-radius:10px; padding:12px; font-size:12px;}
+  .plan-card b{display:block; font-size:12.5px; margin-bottom:2px;}
+  .plan-card span{color:var(--text-2); font-size:11.5px;}
+
+  /* Main column */
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{
+    height:64px; flex-shrink:0; background:var(--card); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:10;
+  }
+  .topbar-title{font-size:16px; font-weight:700; letter-spacing:-.01em;}
+  .topbar-search{
+    display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border);
+    border-radius:9px; padding:8px 12px; width:340px; color:var(--text-3);
+  }
+  .topbar-search input{border:none; background:transparent; outline:none; font-size:13px; width:100%; color:var(--text-1); font-family:inherit;}
+  .topbar-right{display:flex; align-items:center; gap:18px;}
+  .icon-btn{
+    width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border); background:var(--card); position:relative; color:var(--text-2);
+  }
+  .icon-btn .dot{position:absolute; top:7px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--high); border:2px solid var(--card);}
+  .user-chip{display:flex; align-items:center; gap:9px; padding-left:16px; border-left:1px solid var(--border);}
+  .avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#334155,#0F172A); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px;}
+  .user-meta b{display:block; font-size:12.5px;}
+  .user-meta span{font-size:11px; color:var(--text-3);}
+
+  .content{padding:26px 28px 60px; max-width:1520px;}
+  .page{display:none;}
+  .page.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px;}
+  .page-head h1{font-size:22px; margin:0 0 4px; letter-spacing:-.02em;}
+  .page-head p{margin:0; color:var(--text-2); font-size:13.5px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:9px; font-size:13.5px;
+    font-weight:600; border:1px solid var(--border); background:var(--card); color:var(--text-1);
+  }
+  .btn:hover{background:var(--bg);}
+  .btn-primary{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-primary:disabled{background:#CBD5E1; border-color:#CBD5E1; cursor:not-allowed;}
+  .btn-sm{padding:6px 11px; font-size:12.5px; border-radius:7px;}
+
+  /* Cards */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .card-pad{padding:20px 22px;}
+  .card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .card-head h3{font-size:14.5px; margin:0; letter-spacing:-.01em;}
+  .card-head .sub{font-size:12px; color:var(--text-3); margin-top:2px;}
+  .link-more{font-size:12.5px; font-weight:600; color:var(--primary);}
+
+  /* KPI grid */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;}
+  .kpi-card{padding:18px 20px;}
+  .kpi-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .kpi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+  .kpi-label{font-size:12.5px; color:var(--text-2); font-weight:600;}
+  .kpi-value{font-size:26px; font-weight:700; letter-spacing:-.02em; margin:2px 0 6px;}
+  .kpi-delta{font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px;}
+  .delta-up{color:var(--low);} .delta-down{color:var(--high);} .delta-flat{color:var(--text-3);}
+
+  /* Dashboard grids */
+  .grid-2{display:grid; grid-template-columns:1.1fr 1fr; gap:16px; margin-bottom:16px;}
+  .grid-2b{display:grid; grid-template-columns:1.5fr 1fr; gap:16px; margin-bottom:16px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-3);
+    font-weight:700; padding:0 12px 10px; border-bottom:1px solid var(--border);
+  }
+  td{padding:12px; border-bottom:1px solid var(--border); color:var(--text-1); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .1s;}
+  tbody tr:hover{background:var(--bg);}
+  .id-cell{font-weight:600;}
+
+  .badge{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700;}
+  .badge::before{content:""; width:6px; height:6px; border-radius:50%;}
+  .badge-low{background:var(--low-bg); color:var(--low);} .badge-low::before{background:var(--low);}
+  .badge-medium{background:var(--medium-bg); color:var(--medium);} .badge-medium::before{background:var(--medium);}
+  .badge-high{background:var(--high-bg); color:var(--high);} .badge-high::before{background:var(--high);}
+
+  .score-cell{display:flex; align-items:center; gap:8px;}
+  .score-bar{width:52px; height:5px; border-radius:3px; background:var(--border); overflow:hidden;}
+  .score-bar > span{display:block; height:100%; background:var(--primary); border-radius:3px;}
+  .score-num{font-weight:600; width:26px; font-family:'IBM Plex Mono',monospace;}
+
+  .upload-card{margin-bottom:16px;}
+  .upload-title{font-size:13.5px; font-weight:600; margin-bottom:2px;}
+  .upload-meta{font-size:12px; color:var(--text-3);}
+  .status-pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px;}
+  .status-ok{background:var(--low-bg); color:var(--low);}
+
+  .qa-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .qa-item{
+    display:flex; flex-direction:column; gap:10px; padding:16px; border:1px solid var(--border); border-radius:11px;
+    background:var(--card); transition:border-color .15s, box-shadow .15s;
+  }
+  .qa-item:hover{border-color:var(--primary); box-shadow:var(--shadow-md);}
+  .qa-icon{width:34px;height:34px;border-radius:9px; background:var(--primary-light); display:flex; align-items:center; justify-content:center;}
+  .qa-item b{font-size:13px;}
+  .qa-item span{font-size:11.5px; color:var(--text-3);}
+
+  /* Upload page */
+  .dropzone{
+    border:2px dashed #C7D4EA; border-radius:16px; background:var(--primary-light);
+    padding:52px 20px; text-align:center; margin-bottom:18px; transition:border-color .15s, background .15s;
+  }
+  .dropzone.dragging{border-color:var(--primary); background:#E3ECFE;}
+  .dropzone-icon{width:56px;height:56px;border-radius:14px;background:#fff; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
+  .dropzone h3{margin:0 0 6px; font-size:15.5px;}
+  .dropzone p{margin:0 0 16px; color:var(--text-2); font-size:13px;}
+  .format-chip{display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--border); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; color:var(--text-2); margin:0 4px;}
+  .dz-browse{margin-top:18px;}
+
+  .validation-list{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+  .v-row{display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:10px; font-size:13px;}
+  .v-ok{background:var(--low-bg); color:#116632;}
+  .v-warn{background:var(--medium-bg); color:#8A5109;}
+  .v-row b{font-weight:700;}
+  .v-row .v-sub{display:block; font-weight:400; opacity:.85; font-size:12.3px; margin-top:2px;}
+
+  .preview-wrap{overflow-x:auto;}
+  .preview-wrap table{min-width:900px;}
+
+  /* Filters row (Suppliers page) */
+  .filters-row{display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+  .search-box{
+    display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border);
+    border-radius:9px; padding:9px 12px; width:260px; color:var(--text-3);
+  }
+  .search-box input{border:none; outline:none; background:transparent; font-size:13px; width:100%; font-family:inherit; color:var(--text-1);}
+  .select-box{
+    display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border);
+    border-radius:9px; padding:9px 12px; font-size:13px; font-weight:500; color:var(--text-1);
+  }
+  .select-box select{border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; font-weight:500; color:var(--text-1);}
+  .th-sort{display:flex; align-items:center; gap:4px; cursor:pointer; user-select:none;}
+  .results-count{font-size:12.5px; color:var(--text-3); margin-left:auto;}
+
+  .view-btn{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:7px; font-size:12.5px;
+    font-weight:600; border:1px solid var(--border); background:var(--card); color:var(--text-1);
+  }
+  .view-btn:hover{background:var(--primary); color:#fff; border-color:var(--primary);}
+
+  /* Supplier Detail page */
+  .detail-header{
+    display:flex; align-items:center; justify-content:space-between; padding:22px 26px; margin-bottom:18px;
+  }
+  .breadcrumb{font-size:12.5px; color:var(--text-3); margin-bottom:8px; display:flex; align-items:center; gap:6px;}
+  .breadcrumb a{color:var(--primary); font-weight:600;}
+  .detail-id-row{display:flex; align-items:center; gap:14px;}
+  .detail-id-row h1{font-size:21px; margin:0; letter-spacing:-.01em;}
+  .detail-sub{color:var(--text-2); font-size:13px; margin-top:4px;}
+  .overall-score-box{text-align:right;}
+  .overall-score-box .num{font-size:34px; font-weight:800; font-family:'IBM Plex Mono',monospace; letter-spacing:-.02em; line-height:1;}
+  .overall-score-box .lbl{font-size:11.5px; color:var(--text-3); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-top:4px;}
+
+  .kpi-mini-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;}
+  .kpi-mini{padding:15px 16px;}
+  .kpi-mini .lbl{font-size:11.5px; color:var(--text-2); font-weight:600; margin-bottom:6px;}
+  .kpi-mini .val{font-size:19px; font-weight:700; font-family:'IBM Plex Mono',monospace;}
+
+  .detail-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+
+  .dim-list{display:flex; flex-direction:column; gap:14px; margin-top:4px;}
+  .dim-row{display:flex; align-items:center; gap:12px;}
+  .dim-row .dname{width:150px; font-size:12.5px; font-weight:600; color:var(--text-2); flex-shrink:0;}
+  .dim-row .dbar{flex:1; height:7px; border-radius:4px; background:var(--bg); overflow:hidden;}
+  .dim-row .dbar > span{display:block; height:100%; border-radius:4px; background:var(--primary);}
+  .dim-row .dval{width:32px; text-align:right; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+
+  .ai-panel{
+    background:linear-gradient(135deg,#EFF4FF 0%, #F5F8FF 100%); border:1px solid var(--primary-100);
+    border-radius:var(--radius); padding:22px 24px; margin-bottom:16px;
+  }
+  .ai-panel-head{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+  .ai-icon{width:32px;height:32px;border-radius:9px; background:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .ai-panel-head h3{font-size:14px; margin:0;}
+  .ai-panel-head span{font-size:11.5px; color:var(--text-2);}
+  .ai-text{font-size:13.5px; line-height:1.65; color:#1E293B; margin:0 0 14px;}
+  .ai-tags{display:flex; gap:8px; flex-wrap:wrap;}
+  .ai-tag{font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px; background:#fff; border:1px solid var(--primary-100); color:var(--primary);}
+
+  .chart-box{position:relative; width:100%;}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6V12C4 17 7.5 20.7 12 22C16.5 20.7 20 17 20 12V6L12 2Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12L11 14L15.5 9.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">SupplierIQ</div>
+        <div class="brand-sub">AI Evaluation</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Workspace</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard', this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="upload" onclick="navigate('upload', this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M12 4L8 8M12 4L16 8"/><path d="M4 15V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V15"/></svg>
+        Upload Dataset
+      </div>
+      <div class="nav-item" data-page="suppliers" onclick="navigate('suppliers', this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H20M4 18H14"/></svg>
+        Supplier List
+        <span class="badge-count">18</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Insights</div>
+      <div class="nav-item" onclick="navigate('suppliers', this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20V10M12 20V4M17 20V14"/></svg>
+        Compare Suppliers
+      </div>
+      <div class="nav-item" onclick="navigate('dashboard', this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H15M9 3C7 3 5.5 4 4.8 6L3 12L4.8 18C5.5 20 7 21 9 21H15C17 21 18.5 20 19.2 18L21 12L19.2 6C18.5 4 17 3 15 3"/><path d="M9 9H15M9 15H13"/></svg>
+        Reports
+      </div>
+      <div class="nav-item" onclick="void(0)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15A1.7 1.7 0 0021 12.9V11.1A1.7 1.7 0 0019.4 9L18.8 8.9A7.9 7.9 0 0017.9 7.2L18.4 6.6A1.7 1.7 0 0018.4 4.2L17 2.8A1.7 1.7 0 0014.6 2.8L14 3.3A7.9 7.9 0 0012.3 2.4L12.2 1.8A1.7 1.7 0 0010.1 0.2H8.3A1.7 1.7 0 006.6 1.8"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="plan-card">
+        <b>Enterprise Plan</b>
+        <span>18 / 250 suppliers tracked</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div id="topbar-title" class="topbar-title">Dashboard</div>
+      <div class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.5 16.5" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search suppliers, reports, IDs…">
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke-linejoin="round"/><path d="M13.7 21A2 2 0 0110.3 21"/></svg><span class="dot"></span></button>
+        <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8V12L14.5 14.5"/></svg></button>
+        <div class="user-chip">
+          <div class="avatar">MT</div>
+          <div class="user-meta"><b>Merve T.</b><span>Procurement Mgr</span></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ======================================================= -->
+      <!-- PAGE 1 — DASHBOARD -->
+      <!-- ======================================================= -->
+      <section id="page-dashboard" class="page active">
+        <div class="page-head">
+          <div>
+            <h1>Supplier Performance Overview</h1>
+            <p>Live snapshot across 18 suppliers · Last dataset sync: Jul 4, 2026, 09:12</p>
+          </div>
+          <button class="btn btn-primary" onclick="navigate('upload')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5V19M5 12H19" stroke-linecap="round"/></svg>
+            Upload Dataset
+          </button>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+          <div class="card kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Total Suppliers</span>
+              <div class="kpi-icon" style="background:var(--primary-light);">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><path d="M17 20V18C17 15.8 15.2 14 13 14H5C2.8 14 1 15.8 1 18V20" stroke-linecap="round"/><circle cx="9" cy="7" r="4"/><path d="M23 20V18C23 16.1 21.7 14.6 20 14.2"/><path d="M16 4.2C17.7 4.6 19 6.1 19 8C19 9.9 17.7 11.4 16 11.8"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value">18</div>
+            <div class="kpi-delta delta-up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12L12 5L19 12" stroke-linecap="round" stroke-linejoin="round"/></svg> 3 new this quarter</div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">High Risk Suppliers</span>
+              <div class="kpi-icon" style="background:var(--high-bg);">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--high)" stroke-width="1.8"><path d="M12 2L1 21H23L12 2Z" stroke-linejoin="round"/><path d="M12 9V13" stroke-linecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="var(--high)"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value" style="color:var(--high);">4</div>
+            <div class="kpi-delta delta-down"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5V19M19 12L12 19L5 12" stroke-linecap="round" stroke-linejoin="round"/></svg> 1 more than last month</div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Average Supplier Score</span>
+              <div class="kpi-icon" style="background:var(--low-bg);">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--low)" stroke-width="1.8"><path d="M12 2L14.6 8.5L22 9.3L16.5 14L18.2 21L12 17.3L5.8 21L7.5 14L2 9.3L9.4 8.5L12 2Z" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value">76.4</div>
+            <div class="kpi-delta delta-up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12L12 5L19 12" stroke-linecap="round" stroke-linejoin="round"/></svg> +2.1 vs last period</div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Total Incidents</span>
+              <div class="kpi-icon" style="background:var(--medium-bg);">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--medium)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8V12L15 14"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value">27</div>
+            <div class="kpi-delta delta-flat"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12H19" stroke-linecap="round"/></svg> No change vs last period</div>
+          </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="grid-2">
+          <div class="card card-pad">
+            <div class="card-head">
+              <div>
+                <h3>Average Performance by Dimension</h3>
+                <div class="sub">Fleet-wide average across all 18 suppliers</div>
+              </div>
+            </div>
+            <div class="chart-box" style="height:250px;"><canvas id="chartBar"></canvas></div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="card-head">
+              <div>
+                <h3>Risk Distribution</h3>
+                <div class="sub">Share of suppliers per risk tier</div>
+              </div>
+            </div>
+            <div class="chart-box" style="height:250px;"><canvas id="chartDonut"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2b">
+          <!-- TOP 5 HIGH RISK TABLE -->
+          <div class="card card-pad">
+            <div class="card-head">
+              <div>
+                <h3>Top 5 High-Risk Suppliers</h3>
+                <div class="sub">Ranked by MCDM score, ascending</div>
+              </div>
+              <a class="link-more" onclick="navigate('suppliers')">View all →</a>
+            </div>
+            <table>
+              <thead><tr><th>Supplier</th><th>Risk</th><th>MCDM</th><th>Incidents</th><th></th></tr></thead>
+              <tbody id="topRiskTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- RECENT UPLOAD -->
+          <div>
+            <div class="card card-pad upload-card">
+              <div class="card-head">
+                <h3>Recent Dataset Upload</h3>
+              </div>
+              <div class="upload-title">supplier_dataset_2026_Q2.xlsx</div>
+              <div class="upload-meta">18 rows · 11 columns · Uploaded Jul 4, 2026, 09:12 by Merve T.</div>
+              <div style="margin:14px 0;"><span class="status-pill status-ok">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Processed successfully</span>
+              </div>
+              <button class="btn btn-sm" style="width:100%; justify-content:center;">Re-analyze dataset</button>
+            </div>
+
+            <div class="card card-pad" style="margin-top:16px;">
+              <div class="card-head"><h3>Quick Actions</h3></div>
+              <div class="qa-grid" style="grid-template-columns:1fr 1fr;">
+                <div class="qa-item" onclick="navigate('upload')">
+                  <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 5V19M5 12H19" stroke-linecap="round"/></svg></div>
+                  <b>Upload Dataset</b><span>Add new supplier data</span>
+                </div>
+                <div class="qa-item" onclick="navigate('suppliers')">
+                  <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M7 20V10M12 20V4M17 20V14"/></svg></div>
+                  <b>Compare Suppliers</b><span>Side-by-side view</span>
+                </div>
+                <div class="qa-item" onclick="navigate('suppliers')">
+                  <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 2L1 21H23L12 2Z" stroke-linejoin="round"/></svg></div>
+                  <b>High Risk List</b><span>4 suppliers flagged</span>
+                </div>
+                <div class="qa-item">
+                  <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M9 3H15M9 3C7 3 5.5 4 4.8 6L3 12L4.8 18C5.5 20 7 21 9 21H15C17 21 18.5 20 19.2 18L21 12L19.2 6C18.5 4 17 3 15 3"/></svg></div>
+                  <b>Generate Report</b><span>Export PDF summary</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- PAGE 2 — UPLOAD DATASET -->
+      <!-- ======================================================= -->
+      <section id="page-upload" class="page">
+        <div class="page-head">
+          <div>
+            <h1>Upload Supplier Dataset</h1>
+            <p>Import a new file to refresh scores, rankings and risk classifications.</p>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><path d="M12 15V4M12 4L8 8M12 4L16 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V15"/></svg>
+            </div>
+            <h3>Drag and drop your file here</h3>
+            <p>or click below to browse from your computer</p>
+            <span class="format-chip">.XLSX</span><span class="format-chip">.CSV</span>
+            <div class="dz-browse"><button class="btn btn-primary" onclick="simulateUpload()">Browse Files</button></div>
+          </div>
+
+          <div class="validation-list">
+            <div class="v-row v-ok">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div><b>All 11 required columns detected</b><span class="v-sub">Supplier_ID, Year, Financial_Stability_Score, Delivery_Performance_Score, Quality_Compliance_Score, Regulatory_Adherence_Score, Sustainability_Score, Past_Risk_Level, ERP_Transactions, Incidents_Count, MCDM_Score, Risk_Category</span></div>
+            </div>
+            <div class="v-row v-warn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><path d="M12 2L1 21H23L12 2Z" stroke-linejoin="round"/><path d="M12 9V13"/><circle cx="12" cy="16.5" r="0.8" fill="currentColor"/></svg>
+              <div><b>4 rows have missing values in Sustainability_Score</b><span class="v-sub">Rows 6, 9, 14, 17 — missing values will be imputed using the fleet median before scoring</span></div>
+            </div>
+          </div>
+
+          <div class="card-head">
+            <div>
+              <h3>Preview — first 8 rows</h3>
+              <div class="sub">supplier_dataset_2026_Q2.xlsx</div>
+            </div>
+          </div>
+          <div class="preview-wrap">
+            <table>
+              <thead>
+                <tr><th>Supplier ID</th><th>Year</th><th>Financial</th><th>Delivery</th><th>Quality</th><th>Regulatory</th><th>Sustainability</th><th>Incidents</th><th>MCDM</th><th>Risk Category</th></tr>
+              </thead>
+              <tbody id="previewTableBody"></tbody>
+            </table>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button class="btn">Cancel</button>
+            <button class="btn btn-primary" onclick="navigate('dashboard')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke-linejoin="round"/></svg>
+              Analyze Dataset
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- PAGE 3 — SUPPLIER LIST -->
+      <!-- ======================================================= -->
+      <section id="page-suppliers" class="page">
+        <div class="page-head">
+          <div>
+            <h1>Supplier List</h1>
+            <p>Search, filter and drill into every supplier's AI-generated evaluation.</p>
+          </div>
+          <button class="btn btn-primary" onclick="navigate('upload')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5V19M5 12H19" stroke-linecap="round"/></svg>
+            Upload Dataset
+          </button>
+        </div>
+
+        <div class="card card-pad">
+          <div class="filters-row">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21L16.5 16.5" stroke-linecap="round"/></svg>
+              <input id="searchInput" type="text" placeholder="Search Supplier ID…" oninput="renderSupplierTable()">
+            </div>
+            <div class="select-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5H21M6 12H18M10 19H14" stroke-linecap="round"/></svg>
+              <select id="riskFilter" onchange="renderSupplierTable()">
+                <option value="all">All Risk Categories</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            <div class="select-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10H21M8 2V6M16 2V6"/></svg>
+              <select id="yearFilter" onchange="renderSupplierTable()">
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+              </select>
+            </div>
+            <span class="results-count" id="resultsCount"></span>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier ID</th>
+                <th class="th-sort" onclick="sortBy('financial')">Financial <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 10L12 15L17 10"/></svg></th>
+                <th class="th-sort" onclick="sortBy('delivery')">Delivery <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 10L12 15L17 10"/></svg></th>
+                <th class="th-sort" onclick="sortBy('quality')">Quality <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 10L12 15L17 10"/></svg></th>
+                <th class="th-sort" onclick="sortBy('sustainability')">Sustainability <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 10L12 15L17 10"/></svg></th>
+                <th class="th-sort" onclick="sortBy('mcdm')">MCDM Score <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 10L12 15L17 10"/></svg></th>
+                <th>Risk Category</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="supplierTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- PAGE 4 — SUPPLIER DETAIL -->
+      <!-- ======================================================= -->
+      <section id="page-detail" class="page">
+        <div class="breadcrumb"><a onclick="navigate('suppliers')">Supplier List</a> <span>/</span> <span id="crumbId">—</span></div>
+
+        <div class="card detail-header">
+          <div>
+            <div class="detail-id-row">
+              <h1 id="detailName">—</h1>
+              <span class="badge" id="detailBadge">—</span>
+            </div>
+            <div class="detail-sub" id="detailSub">—</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:28px;">
+            <div class="overall-score-box">
+              <div class="num" id="detailScore">—</div>
+              <div class="lbl">Overall Score</div>
+            </div>
+            <button class="btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H15M9 3C7 3 5.5 4 4.8 6L3 12L4.8 18C5.5 20 7 21 9 21H15C17 21 18.5 20 19.2 18L21 12L19.2 6C18.5 4 17 3 15 3"/></svg>
+              Export Report
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-mini-grid">
+          <div class="card kpi-mini"><div class="lbl">ERP Transactions</div><div class="val" id="detailERP">—</div></div>
+          <div class="card kpi-mini"><div class="lbl">Incident Count</div><div class="val" id="detailIncidents">—</div></div>
+          <div class="card kpi-mini"><div class="lbl">Past Risk Level</div><div class="val" id="detailPastRisk">—</div></div>
+          <div class="card kpi-mini"><div class="lbl">MCDM Score</div><div class="val" id="detailMCDM">—</div></div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="card card-pad">
+            <div class="card-head">
+              <div><h3>Performance Radar</h3><div class="sub">Current-year score across all 5 dimensions</div></div>
+            </div>
+            <div class="chart-box" style="height:270px;"><canvas id="chartRadar"></canvas></div>
+          </div>
+          <div class="card card-pad">
+            <div class="card-head">
+              <div><h3>Historical Performance</h3><div class="sub">MCDM score trend, 2023 – 2026</div></div>
+            </div>
+            <div class="chart-box" style="height:270px;"><canvas id="chartHistory"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-bottom:16px;">
+          <div class="card-head"><h3>Dimension Breakdown</h3></div>
+          <div class="dim-list" id="dimList"></div>
+        </div>
+
+        <div class="ai-panel">
+          <div class="ai-panel-head">
+            <div class="ai-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 3L13.8 9.2L20 11L13.8 12.8L12 19L10.2 12.8L4 11L10.2 9.2L12 3Z" stroke-linejoin="round"/></svg>
+            </div>
+            <div><h3>AI Recommendation</h3><span>Generated from current-year scoring model · MCDM v2.1</span></div>
+          </div>
+          <p class="ai-text" id="aiRecommendationText">—</p>
+          <div class="ai-tags" id="aiTags"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA GENERATION
+   ============================================================ */
+function seededVal(seed, min, max){
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  const frac = x - Math.floor(x);
+  return Math.round(min + frac * (max - min));
+}
+
+const YEARS = [2023, 2024, 2025, 2026];
+const SUPPLIER_COUNT = 18;
+
+function buildSupplier(i){
+  const id = 'SUP-' + String(1001 + i);
+  const history = {};
+  YEARS.forEach((year, yIdx) => {
+    const base = i * 13 + yIdx * 31;
+    const financial = seededVal(base + 1, 45, 96);
+    const delivery = seededVal(base + 2, 40, 98);
+    const quality = seededVal(base + 3, 42, 97);
+    const regulatory = seededVal(base + 4, 38, 99);
+    const sustainability = seededVal(base + 5, 35, 92);
+    const incidents = seededVal(base + 6, 0, 9);
+    const erp = seededVal(base + 7, 120, 980);
+    const mcdm = Math.round(
+      financial*0.22 + delivery*0.24 + quality*0.22 + regulatory*0.17 + sustainability*0.15 - incidents*0.6
+    );
+    const riskCat = mcdm >= 75 ? 'Low' : mcdm >= 55 ? 'Medium' : 'High';
+    history[year] = { financial, delivery, quality, regulatory, sustainability, incidents, erp, mcdm, riskCat };
+  });
+  return { id, name: 'Supplier ' + id.split('-')[1], history };
+}
+
+const SUPPLIERS = Array.from({length: SUPPLIER_COUNT}, (_, i) => buildSupplier(i));
+let sortState = { key: 'mcdm', dir: 'asc' };
+let currentDetailId = null;
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const TITLES = { dashboard:'Dashboard', upload:'Upload Dataset', suppliers:'Supplier List', detail:'Supplier Detail' };
+
+function navigate(page, el){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('topbar-title').textContent = TITLES[page];
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    const match = document.querySelector('.nav-item[data-page="' + page + '"]');
+    if (match) match.classList.add('active');
+  }
+  window.scrollTo(0,0);
+  if (page === 'dashboard') setTimeout(renderDashboard, 0);
+  if (page === 'suppliers') setTimeout(renderSupplierTable, 0);
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function badgeHtml(risk){
+  const cls = risk === 'Low' ? 'badge-low' : risk === 'Medium' ? 'badge-medium' : 'badge-high';
+  return '<span class="badge ' + cls + '">' + risk + '</span>';
+}
+function scoreCell(val){
+  return '<div class="score-cell"><div class="score-bar"><span style="width:' + val + '%"></span></div><span class="score-num mono">' + val + '</span></div>';
+}
+
+/* ============================================================
+   DASHBOARD RENDER
+   ============================================================ */
+let barChart, donutChart;
+function renderDashboard(){
+  const year = 2026;
+  const rows = SUPPLIERS.map(s => ({ id: s.id, ...s.history[year] }));
+
+  // Top 5 high risk
+  const topRisk = [...rows].sort((a,b) => a.mcdm - b.mcdm).slice(0,5);
+  document.getElementById('topRiskTableBody').innerHTML = topRisk.map(r => `
+    <tr>
+      <td class="id-cell">${r.id}</td>
+      <td>${badgeHtml(r.riskCat)}</td>
+      <td class="mono" style="font-weight:600;">${r.mcdm}</td>
+      <td class="mono">${r.incidents}</td>
+      <td><button class="view-btn" onclick="openDetail('${r.id}')">View</button></td>
+    </tr>`).join('');
+
+  // Bar chart — avg performance by dimension
+  const dims = ['financial','delivery','quality','regulatory','sustainability'];
+  const dimLabels = ['Financial Stability','Delivery Performance','Quality Compliance','Regulatory Adherence','Sustainability'];
+  const avgs = dims.map(d => Math.round(rows.reduce((s,r) => s + r[d], 0) / rows.length));
+
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: { labels: dimLabels, datasets: [{ data: avgs, backgroundColor: '#2563EB', borderRadius: 6, barThickness: 18 }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display:false }, tooltip:{ backgroundColor:'#0F172A', padding:10, cornerRadius:8 } },
+      scales: {
+        x: { min:0, max:100, grid:{ color:'#EEF1F6' }, ticks:{ color:'#94A0B2', font:{ size:11 } } },
+        y: { grid:{ display:false }, ticks:{ color:'#334155', font:{ size:12, weight:600 } } }
+      }
+    }
+  });
+
+  // Donut chart — risk distribution
+  const counts = { Low:0, Medium:0, High:0 };
+  rows.forEach(r => counts[r.riskCat]++);
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Low Risk','Medium Risk','High Risk'],
+      datasets: [{ data: [counts.Low, counts.Medium, counts.High], backgroundColor:['#16A34A','#D97706','#DC2626'], borderWidth:3, borderColor:'#fff' }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'68%',
+      plugins: {
+        legend: { position:'bottom', labels:{ usePointStyle:true, pointStyle:'circle', boxWidth:8, padding:16, color:'#334155', font:{ size:12, weight:600 } } },
+        tooltip:{ backgroundColor:'#0F172A', padding:10, cornerRadius:8 }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   SUPPLIER LIST RENDER
+   ============================================================ */
+function sortBy(key){
+  sortState.dir = (sortState.key === key && sortState.dir === 'asc') ? 'desc' : 'asc';
+  sortState.key = key;
+  renderSupplierTable();
+}
+
+function renderSupplierTable(){
+  const year = parseInt(document.getElementById('yearFilter').value);
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const riskFilter = document.getElementById('riskFilter').value;
+
+  let rows = SUPPLIERS.map(s => ({ id: s.id, ...s.history[year] }));
+  if (search) rows = rows.filter(r => r.id.toLowerCase().includes(search));
+  if (riskFilter !== 'all') rows = rows.filter(r => r.riskCat === riskFilter);
+
+  rows.sort((a,b) => {
+    const v = (a[sortState.key] - b[sortState.key]) * (sortState.dir === 'asc' ? 1 : -1);
+    return v;
+  });
+
+  document.getElementById('resultsCount').textContent = rows.length + ' of ' + SUPPLIER_COUNT + ' suppliers';
+  document.getElementById('supplierTableBody').innerHTML = rows.map(r => `
+    <tr>
+      <td class="id-cell">${r.id}</td>
+      <td>${scoreCell(r.financial)}</td>
+      <td>${scoreCell(r.delivery)}</td>
+      <td>${scoreCell(r.quality)}</td>
+      <td>${scoreCell(r.sustainability)}</td>
+      <td class="mono" style="font-weight:700; font-size:14px;">${r.mcdm}</td>
+      <td>${badgeHtml(r.riskCat)}</td>
+      <td><button class="view-btn" onclick="openDetail('${r.id}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12S5 5 12 5S22 12 22 12S19 19 12 19S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+        View</button></td>
+    </tr>`).join('');
+}
+
+/* ============================================================
+   SUPPLIER DETAIL RENDER
+   ============================================================ */
+let radarChart, historyChart;
+const RECOMMENDATIONS = {
+  Low: (s) => `${s.name} demonstrates strong, consistent performance across financial and delivery dimensions, with no material compliance concerns in the current period. Recommended for continued long-term collaboration, with standard annual review cadence.`,
+  Medium: (s) => `${s.name} shows solid delivery reliability but moderate sustainability performance relative to fleet average. Recommended for continued collaboration with a periodic sustainability review and closer monitoring of incident trends.`,
+  High: (s) => `${s.name} shows elevated risk driven by declining regulatory adherence and a higher incident count than the supplier base average. Recommended for a formal corrective action plan before renewal, with quarterly reassessment.`
+};
+
+function openDetail(id){
+  currentDetailId = id;
+  const supplier = SUPPLIERS.find(s => s.id === id);
+  const year = 2026;
+  const d = supplier.history[year];
+
+  document.getElementById('crumbId').textContent = id;
+  document.getElementById('detailName').textContent = supplier.name;
+  document.getElementById('detailSub').textContent = id + ' · Reporting Year ' + year + ' · Category: Electronics Components';
+  document.getElementById('detailBadge').outerHTML = badgeHtml(d.riskCat).replace('<span class="badge', '<span id="detailBadge" class="badge');
+  document.getElementById('detailScore').textContent = d.mcdm;
+  document.getElementById('detailERP').textContent = d.erp.toLocaleString();
+  document.getElementById('detailIncidents').textContent = d.incidents;
+  document.getElementById('detailPastRisk').textContent = supplier.history[2025].riskCat;
+  document.getElementById('detailMCDM').textContent = d.mcdm;
+
+  // Dimension breakdown
+  const dims = [
+    ['Financial Stability', d.financial],
+    ['Delivery Performance', d.delivery],
+    ['Quality Compliance', d.quality],
+    ['Regulatory Adherence', d.regulatory],
+    ['Sustainability', d.sustainability]
+  ];
+  document.getElementById('dimList').innerHTML = dims.map(([name, val]) => `
+    <div class="dim-row">
+      <span class="dname">${name}</span>
+      <div class="dbar"><span style="width:${val}%; background:${val < 55 ? '#DC2626' : val < 75 ? '#D97706' : '#2563EB'}"></span></div>
+      <span class="dval">${val}</span>
+    </div>`).join('');
+
+  // AI recommendation
+  document.getElementById('aiRecommendationText').textContent = RECOMMENDATIONS[d.riskCat](supplier);
+  const tags = [];
+  tags.push(d.delivery >= 75 ? 'Strong Delivery' : d.delivery < 55 ? 'Delivery Below Target' : 'Stable Delivery');
+  tags.push(d.sustainability < 60 ? 'Sustainability Below Threshold' : 'Sustainability On Track');
+  tags.push(d.incidents >= 5 ? 'Elevated Incident Rate' : 'Low Incident Rate');
+  tags.push(d.regulatory < 60 ? 'Regulatory Review Needed' : 'Compliant');
+  document.getElementById('aiTags').innerHTML = tags.map(t => `<span class="ai-tag">${t}</span>`).join('');
+
+  // Radar chart
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('chartRadar'), {
+    type: 'radar',
+    data: {
+      labels: ['Financial','Delivery','Quality','Regulatory','Sustainability'],
+      datasets: [{
+        data: [d.financial, d.delivery, d.quality, d.regulatory, d.sustainability],
+        backgroundColor:'rgba(37,99,235,0.15)', borderColor:'#2563EB', borderWidth:2,
+        pointBackgroundColor:'#2563EB', pointRadius:4
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#0F172A', padding:10, cornerRadius:8 } },
+      scales:{ r:{ min:0, max:100, ticks:{ display:false, stepSize:25 }, grid:{ color:'#E4E9F1' }, angleLines:{ color:'#E4E9F1' }, pointLabels:{ color:'#334155', font:{ size:11.5, weight:600 } } } }
+    }
+  });
+
+  // History chart
+  const histLabels = YEARS.map(String);
+  const histData = YEARS.map(y => supplier.history[y].mcdm);
+  if (historyChart) historyChart.destroy();
+  historyChart = new Chart(document.getElementById('chartHistory'), {
+    type:'line',
+    data:{
+      labels: histLabels,
+      datasets:[{
+        data: histData, borderColor:'#2563EB', borderWidth:3, tension:0.35,
+        pointBackgroundColor:'#fff', pointBorderColor:'#2563EB', pointBorderWidth:2, pointRadius:5,
+        fill:true, backgroundColor:'rgba(37,99,235,0.08)'
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#0F172A', padding:10, cornerRadius:8 } },
+      scales:{
+        y:{ min:0, max:100, grid:{ color:'#EEF1F6' }, ticks:{ color:'#94A0B2', font:{ size:11 } } },
+        x:{ grid:{ display:false }, ticks:{ color:'#334155', font:{ size:12, weight:600 } } }
+      }
+    }
+  });
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+  document.getElementById('topbar-title').textContent = 'Supplier Detail';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="suppliers"]').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   UPLOAD PAGE
+   ============================================================ */
+function simulateUpload(){
+  const dz = document.getElementById('dropzone');
+  dz.classList.add('dragging');
+  setTimeout(() => dz.classList.remove('dragging'), 350);
+}
+
+function renderPreviewTable(){
+  const rows = SUPPLIERS.slice(0, 8).map(s => s.history[2026]).map((d, i) => ({ id: SUPPLIERS[i].id, ...d }));
+  document.getElementById('previewTableBody').innerHTML = rows.map(r => `
+    <tr>
+      <td class="id-cell">${r.id}</td>
+      <td class="mono">2026</td>
+      <td class="mono">${r.financial}</td>
+      <td class="mono">${r.delivery}</td>
+      <td class="mono">${r.quality}</td>
+      <td class="mono">${r.regulatory}</td>
+      <td class="mono">${r.sustainability}</td>
+      <td class="mono">${r.incidents}</td>
+      <td class="mono" style="font-weight:700;">${r.mcdm}</td>
+      <td>${badgeHtml(r.riskCat)}</td>
+    </tr>`).join('');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderDashboard();
+renderSupplierTable();
+renderPreviewTable();
+openDetail(SUPPLIERS[0].id);
+navigate('dashboard');
+</script>
+
+</body>
+</html>
