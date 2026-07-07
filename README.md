@@ -34,7 +34,7 @@ Takım 121
 * Operasyon Müdürleri
 
 # Product Backlog URL
-
+https://github.com/users/kubranurcck/projects/6/views/1
 
 
 # Sprint 1
@@ -46,6 +46,9 @@ Takım 121
 
 * Takım olarak iki haftalık sprint süresi boyunca Sprint Planning, Sprint Progress ve Sprint Review olmak üzere toplam üç toplantı yapılmasına karar verilmiştir.
 * İlk sprint kapsamında gerçekleştirilen toplantılarda ürün vizyonu belirlenmiş, Product Backlog oluşturulmuş, görev dağılımları yapılmış ve geliştirilen kullanıcı arayüzü ile proje dokümantasyonu değerlendirilmiştir. Sprint sonunda tamamlanan çalışmalar gözden geçirilmiş ve ikinci sprint hedefleri planlanmıştır.
+[Sprint1_Meeting_Notes_Supplier_Evaluation_System.docx](https://github.com/user-attachments/files/29750705/Sprint1_Meeting_Notes_Supplier_Evaluation_System.docx)
+
+
 
 # Sprint Board Update
 
