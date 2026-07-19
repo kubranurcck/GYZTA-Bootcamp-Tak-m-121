@@ -108,10 +108,10 @@ Sprint sonunda takım olarak aşağıdaki kararlar alınmıştır:
 
 # Sprint Toplantıları
 
-* Takım olarak bu sprintte de Sprint Planning, Sprint Progress ve Sprint Review olmak üzere üç toplantı gerçekleştirilmesine karar verilmiştir.
-* Sprint Planning toplantısında Country Risk Engine'in veri yapısı ve ağırlıklandırma mantığı üzerinde uzlaşılmış, Sprint Progress toplantısında geliştirilen dashboard ve profil ekranları ekip ile paylaşılmış, Sprint Review toplantısında tamamlanan çalışmalar değerlendirilerek Sprint 3 hedefleri planlanmıştır.
+* Takım olarak bu sprintte yoğun programlar nedeniyle iki planlı toplantı gerçekleştirilmiştir. Sprint süresince görev takibi, teknik değerlendirmeler ve karar alma süreçleri grup içi mesajlaşma platformları üzerinden sürdürülmüştür.
 
-
+* İlk toplantıda Sprint 1 çıktıları değerlendirilmiş, Country Risk Engine'in veri yapısı ve ağırlıklandırma mantığı üzerinde uzlaşılmış, Product Backlog güncellenmiş ve görev dağılımları yapılmıştır. Sprint sonunda gerçekleştirilen ikinci toplantıda ise geliştirilen dashboard ve profil ekranları ile tamamlanan modüller ekip tarafından değerlendirilmiş, sprint çıktıları gözden geçirilmiş ve Sprint 3 kapsamında gerçekleştirilecek backend/API entegrasyonu, veri kalıcılığı ve yapay zekâ modelinin gerçek veri seti üzerinde çalıştırılmasına yönelik hedefler planlanmıştır.
+[Sprint2_Meeting_Notes_Supplier_Evaluation_System.docx](https://github.com/user-attachments/files/30170024/Sprint2_Meeting_Notes_Supplier_Evaluation_System.docx)
 
 
 # Sprint Board Update
