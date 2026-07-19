@@ -117,6 +117,8 @@ Sprint sonunda takım olarak aşağıdaki kararlar alınmıştır:
 # Sprint Board Update
 
 * Sprint Board ekran görüntüleri README içerisinde paylaşılmıştır.
+* <img width="1919" height="820" alt="image" src="https://github.com/user-attachments/assets/2c4824c2-9dfa-4fdd-a98f-1243fd36b175" />
+
 
 
 # Ürün Durumu
